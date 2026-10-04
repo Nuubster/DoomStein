@@ -3,9 +3,7 @@
 #include <SDL3/SDL.h>
 #include <math.h>
 
-#define WIDTH 450
-// #define step 2.0f/(float)WIDTH 
-// steo instead of i += 0.005f
+#define WIDTH 450 
 #define HEIGHT 350
 #define CELL_SIZE 32
 #define PI 3.141592653589793 // Hehe nasa refference
@@ -15,13 +13,13 @@ static uint32_t framebuffer[WIDTH * HEIGHT];
 static int Map[9][10] = 
 {
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-    { 1, 0, 1, 0, 0, 0, 1, 0, 0, 1 },
-    { 1, 0, 1, 1, 1, 0, 1, 0, 0, 1 },
-    { 1, 0, 1, 0, 0, 0, 1, 0, 0, 1 },
-    { 1, 0, 0, 0, 0, 0, 1, 1, 0, 1 },
+    { 1, 0, 1, 0, 0, 0, 1, 1, 1, 1 },
+    { 1, 0, 0, 0, 1, 0, 1, 0, 0, 1 },
+    { 1, 0, 0, 0, 1, 0, 1, 0, 0, 1 },
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { 1, 0, 0, 0, 1, 1, 0, 0, 0, 1 },
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { 1, 0, 0, 0, 1, 1, 0, 1, 1, 1 },
+    { 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 },
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 };
 // Map[y][x]
@@ -32,30 +30,6 @@ struct Player {
     float y;
     float angle;
 };
-
-float RayCalc(float angle, struct Player Slayer) 
-{
-    float distance = 0.00f;
-
-    // Collision checks for Rays
-    while (distance < 300.0f) 
-    {
-        float rayX = Slayer.x + cosf(angle) * distance;
-        float rayY = Slayer.y + sinf(angle) * distance;
-
-        int mapX = (int)(rayX / CELL_SIZE);
-        int mapY = (int)(rayY / CELL_SIZE);
-
-         if (Map[mapY][mapX] == 1) {
-             // Here we hit a wall... render?
-             return distance;
-         }
-         // else { PutPixel(rayX, rayY, 0x33FF33); }
-
-         distance += 1.00f;
-    }
-  return 300.0f;
-}
 
 void MapSetUp()
 {
@@ -175,26 +149,57 @@ int main() {
         Clear();
         float distance;
 
+        // the DDA black box
         for (int x = 0; x < WIDTH; x++) 
-        { 
-            float i = ((float)x / WIDTH) * 2.0f - 1.0f;
+        {
+            // this is the FOV btw
+            float i = ((float)x / WIDTH) * 1.0f - 0.5f;
 
-            distance = RayCalc(Slayer.angle + i, Slayer);
-            float CorrectedDistance = distance * cosf((Slayer.angle + i) - Slayer.angle);
+            float RayDirX = cosf(Slayer.angle + i);
+            float RayDirY = sinf(Slayer.angle + i);
 
-            int WallSize = 9000 / CorrectedDistance;
-            int WallTop =  (HEIGHT - WallSize) / 2;
-            int WallBottom = WallTop + WallSize;
-  
-            for (int y = 0; y < HEIGHT; y++)
+            float SlayerMapX = Slayer.x / CELL_SIZE;
+            float SlayerMapY = Slayer.y / CELL_SIZE;
+
+            int MapX = (int)SlayerMapX;
+            int MapY = (int)SlayerMapY;
+
+            int StepX = RayDirX > 0 ? 1 : -1;
+            int StepY = RayDirY > 0 ? 1 : -1;
+
+            float DeltaDistX = fabsf(1 / RayDirX);
+            float DeltaDistY = fabsf(1 / RayDirY);
+
+            float SideDistX;
+            float SideDistY;
+
+            if (RayDirX > 0) { SideDistX = (MapX + 1 - SlayerMapX) * DeltaDistX; }
+                else { SideDistX = (SlayerMapX - MapX) * DeltaDistX; }
+            if (RayDirY > 0) { SideDistY = (MapY + 1 - SlayerMapY) * DeltaDistY; }
+                else { SideDistY = (SlayerMapY - MapY) * DeltaDistY; }
+
+            int HitStatus = Map[MapY][MapX] == 1 ? 1 : 0;
+            int SideStatus;
+            float PerpWallDist;
+
+            while (HitStatus == 0) 
             {
-                if (y <= WallTop || y >= WallBottom) { PutPixel(x, y, 0x2A2A2A); }
-                else { if (distance <= 50) { PutPixel(x, y, 0xFFCD00); } else { PutPixel(x, y, 0xFF671F); } } 
+                if (SideDistX < SideDistY) { SideDistX += DeltaDistX; MapX += StepX; SideStatus = 0; } 
+                else { SideDistY += DeltaDistY; MapY += StepY; SideStatus = 1; }
+
+                HitStatus = Map[MapY][MapX] == 1 ? 1 : 0;
             }
+
+            PerpWallDist = SideStatus == 0 ? SideDistX - DeltaDistX : SideDistY - DeltaDistY;
+
+            int WallHeight = 180 / PerpWallDist;
+            int WallTop = (HEIGHT - WallHeight) / 2;
+            int WallBottom = (HEIGHT + WallHeight) / 2;
+
+             for (int y = WallTop; y < WallBottom; y++) 
+            { if (PerpWallDist <= 2) { PutPixel(x, y, 0xFF0000); } else { PutPixel(x, y, 0xC8102E); } }
         }
         }
-                       
-        
 
         SDL_UpdateTexture(texture, NULL, framebuffer, WIDTH * sizeof(uint32_t));
 
@@ -209,14 +214,16 @@ int main() {
 
         if (elapsed < TargetFrame) { SDL_DelayPrecise((uint64_t)((TargetFrame - elapsed) * 1000000000.0)); }
         frame++;
-
+        
         uint64_t final = SDL_GetPerformanceCounter();
 
         double FrameTime = (double)(final - start) / (double)SDL_GetPerformanceFrequency();
-
         double FPS = 1.0 / FrameTime;
-        //printf("After Delay: %.6f FPS: %.2f\n", elapsed ,FPS);
-        //printf("FPS: %.2f\n", FPS);
+        
+        if (frame % 60 == 0) { printf("FPS: %.2f\n", FPS); }
+
+        //printf("After Delay: %.6f FPS: %.2f\n", elapsed ,FPS);    
     }
     return 0;
 }
+
