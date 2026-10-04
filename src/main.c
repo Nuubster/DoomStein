@@ -3,65 +3,17 @@
 #include <SDL3/SDL.h>
 #include <math.h>
 
-#define WIDTH 450 
-#define HEIGHT 350
+#include "map.h"
+#include "render.h"
+
 #define CELL_SIZE 32
 #define PI 3.141592653589793 // Hehe nasa refference
 
-static uint32_t framebuffer[WIDTH * HEIGHT];
-
-static int Map[9][10] = 
-{
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-    { 1, 0, 1, 0, 0, 0, 1, 1, 1, 1 },
-    { 1, 0, 0, 0, 1, 0, 1, 0, 0, 1 },
-    { 1, 0, 0, 0, 1, 0, 1, 0, 0, 1 },
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { 1, 0, 0, 0, 1, 1, 0, 1, 1, 1 },
-    { 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 },
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-};
-// Map[y][x]
-
-void PutPixel(uint32_t x, uint32_t y, uint32_t color);
 struct Player {
     float x;
     float y;
     float angle;
 };
-
-void MapSetUp()
-{
-    for (int mapY = 0; mapY < 10; mapY++) {
-        for (int mapX = 0; mapX < 10; mapX++) {
-            for (int pixelY = 1; pixelY < CELL_SIZE; pixelY++) {
-                for (int pixelX = 1; pixelX < CELL_SIZE; pixelX++) 
-                {
-                    int screenX = mapX * CELL_SIZE + pixelX;
-                    int screenY = mapY * CELL_SIZE + pixelY;
-
-                    if (Map[mapY][mapX] == 1) { PutPixel(screenX, screenY, 0xFFFFFF); }
-                    if (Map[mapY][mapX] == 0) { PutPixel(screenX, screenY, 0x2A2A2A); }  
-                }
-            }
-        }
-    }       
-}
-
-void PutPixel(uint32_t x, uint32_t y, uint32_t color) 
-{
-    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) { return; }
-    framebuffer[y * WIDTH + x] = color;
-}
-
-void Clear() {
-    for (int X = 0; X < WIDTH; X++){
-        for (int Y = 0; Y < HEIGHT; Y++) {
-                framebuffer[Y * WIDTH + X] = 0x2A2A2A;
-        }
-    }
-}
 
 int main() {
     SDL_Window *window;
@@ -70,10 +22,11 @@ int main() {
     SDL_Event event;
 
     const double TargetFrame = 1.0 / 60.0;
+    
     // Init
-    window = SDL_CreateWindow("Wolfenstein 1D", WIDTH * 2, HEIGHT * 2, 0);
+    window = SDL_CreateWindow("Wolfenstein 1D", RENDER_WIDTH * 2, RENDER_HEIGHT * 2, 0);
     renderer = SDL_CreateRenderer(window, NULL);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, RENDER_WIDTH, RENDER_HEIGHT);
 
     uint8_t IsRunning = 1;
     uint32_t frame = 0;
@@ -150,10 +103,10 @@ int main() {
         float distance;
 
         // the DDA black box
-        for (int x = 0; x < WIDTH; x++) 
+        for (int x = 0; x < RENDER_WIDTH; x++) 
         {
             // this is the FOV btw
-            float i = ((float)x / WIDTH) * 1.0f - 0.5f;
+            float i = ((float)x / RENDER_WIDTH) * 1.0f - 0.5f;
 
             float RayDirX = cosf(Slayer.angle + i);
             float RayDirY = sinf(Slayer.angle + i);
@@ -193,15 +146,15 @@ int main() {
             PerpWallDist = SideStatus == 0 ? SideDistX - DeltaDistX : SideDistY - DeltaDistY;
 
             int WallHeight = 180 / PerpWallDist;
-            int WallTop = (HEIGHT - WallHeight) / 2;
-            int WallBottom = (HEIGHT + WallHeight) / 2;
+            int WallTop = (RENDER_HEIGHT - WallHeight) / 2;
+            int WallBottom = (RENDER_HEIGHT + WallHeight) / 2;
 
              for (int y = WallTop; y < WallBottom; y++) 
             { if (PerpWallDist <= 2) { PutPixel(x, y, 0xFF0000); } else { PutPixel(x, y, 0xC8102E); } }
         }
         }
 
-        SDL_UpdateTexture(texture, NULL, framebuffer, WIDTH * sizeof(uint32_t));
+        SDL_UpdateTexture(texture, NULL, framebuffer, RENDER_WIDTH * sizeof(uint32_t));
 
         SDL_RenderClear(renderer);
         SDL_RenderTexture(renderer, texture, NULL, NULL);
