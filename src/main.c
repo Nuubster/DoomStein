@@ -135,11 +135,11 @@ int main() {
             int StepX = RayDirX > 0 ? 1 : -1;
             int StepY = RayDirY > 0 ? 1 : -1;
 
-            // Distance to grid boundary [horizontal] (?)
+            // Distance (along the ray) between grid boundaries 
             float DeltaDistX = fabsf(1 / RayDirX);
             float DeltaDistY = fabsf(1 / RayDirY);
 
-            // Distance to grid boundary [vertical] (?)
+            // Distance (along the ray) to the next grid boundary 
             float SideDistX;
             float SideDistY;
 
@@ -149,6 +149,9 @@ int main() {
                 else { SideDistY = (SlayerMapY - MapY) * DeltaDistY; }
 
             int HitStatus = Map[MapY][MapX] == 1 ? 1 : 0;
+
+            // 0 Last grid boundary was Vertical
+            // 1 Last grid boundary was Horizontal
             int SideStatus;
             float PerpWallDist;
 
@@ -167,12 +170,15 @@ int main() {
             int WallTop = (RENDER_HEIGHT - WallHeight) / 2;
             int WallBottom = (RENDER_HEIGHT + WallHeight) / 2;
 
-            int TextureStartX = (8 / RENDER_WIDTH) * x;
+            float TextureDivideY = 8 / RENDER_HEIGHT;
+            float TextureDivideX = 8 / RENDER_WIDTH;
+            int TextureStartX = SideStatus == 1 ? (int)(TextureDivideX * x) : (int)(TextureDivideX * ) ;
+
             // THE RENDERING!! ~ with the basic distance buffer
             for (int y = WallTop; y < WallBottom; y++) 
             {
-                int TextureStartY = (8 / RENDER_HEIGHT) * y;
-                PutPixel(x, y, TestTexture[TextureStartX][TextureStartY]);
+                int TextureStartY = SideStatus == 0 ? (int)(TextureDivideY * y) : (int)(TextureDivideY * );
+                PutPixel(x, y, TestTexture[TextureStartY][TextureStartX]);
 
                 /*
                 if (PerpWallDist <= 2) {
