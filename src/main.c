@@ -14,11 +14,25 @@ struct Player {
     float angle;
 };
 
+uint32_t TestTexture[8][8] =
+{
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 }
+};
+
 int main() {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     SDL_Event event;
+
+    SDL_Surface *image;
 
     const double TargetFrame = 1.0 / 60.0;
     
@@ -68,33 +82,31 @@ int main() {
             if (keys[SDL_SCANCODE_RIGHT]) { Slayer.angle += 0.05f; }
         
         Clear();
-        // printf("angle = %f, cos = %f, sin = %f\n", Slayer.angle, cosf(Slayer.angle), sinf(Slayer.angle));  
-        // printf("X movement: %d | Y movement: %d\n", Slayer.x, Slayer.y);
-
+             
         if (MapView == 1) 
         {
         MapSetUp();
+
         // Rendering Player
         for (int i = -1; i < 1; i++) {
             for (int j = -1; j < 1; j++) { PutPixel(Slayer.x + i, Slayer.y + j, 0x005EB8); } 
         }
         float distance = 0;
+
         // Angle of POV rendered
         while (distance < 300.0f) 
         {
-        float rayX = Slayer.x + cosf(Slayer.angle) * distance;
-        float rayY = Slayer.y + sinf(Slayer.angle) * distance;
+            float rayX = Slayer.x + cosf(Slayer.angle) * distance;
+            float rayY = Slayer.y + sinf(Slayer.angle) * distance;
 
-        int mapX = (int)(rayX / CELL_SIZE);
-        int mapY = (int)(rayY / CELL_SIZE);
+            int mapX = (int)(rayX / CELL_SIZE);
+            int mapY = (int)(rayY / CELL_SIZE);
 
-         if (Map[mapY][mapX] == 1) {
-         }
-         else { PutPixel(rayX, rayY, 0x33FF33); }
+            if (Map[mapY][mapX] == 1) {}
+            else { PutPixel(rayX, rayY, 0x33FF33); }
 
-         distance += 1.00f;
-         }
-
+            distance += 1.00f;
+        }
         } 
         else 
         {
@@ -107,21 +119,27 @@ int main() {
             // this is the FOV btw
             float i = ((float)x / RENDER_WIDTH) * 1.0f - 0.5f;
 
+            // The direction the ray is facing
             float RayDirX = cosf(Slayer.angle + i);
             float RayDirY = sinf(Slayer.angle + i);
 
+            // Player's position on the MAP
             float SlayerMapX = Slayer.x / CELL_SIZE;
             float SlayerMapY = Slayer.y / CELL_SIZE;
 
+            // Player's position on the MAP(array)
             int MapX = (int)SlayerMapX;
             int MapY = (int)SlayerMapY;
 
+            // Which Cell to move next
             int StepX = RayDirX > 0 ? 1 : -1;
             int StepY = RayDirY > 0 ? 1 : -1;
 
+            // Distance to grid boundary [horizontal] (?)
             float DeltaDistX = fabsf(1 / RayDirX);
             float DeltaDistY = fabsf(1 / RayDirY);
 
+            // Distance to grid boundary [vertical] (?)
             float SideDistX;
             float SideDistY;
 
@@ -144,12 +162,25 @@ int main() {
 
             PerpWallDist = SideStatus == 0 ? SideDistX - DeltaDistX : SideDistY - DeltaDistY;
 
+            // The values from DDA being used
             int WallHeight = 180 / PerpWallDist;
             int WallTop = (RENDER_HEIGHT - WallHeight) / 2;
             int WallBottom = (RENDER_HEIGHT + WallHeight) / 2;
 
-             for (int y = WallTop; y < WallBottom; y++) 
-            { if (PerpWallDist <= 2) { PutPixel(x, y, 0xFF0000); } else { PutPixel(x, y, 0xC8102E); } }
+            int TextureStartX = (8 / RENDER_WIDTH) * x;
+            // THE RENDERING!! ~ with the basic distance buffer
+            for (int y = WallTop; y < WallBottom; y++) 
+            {
+                int TextureStartY = (8 / RENDER_HEIGHT) * y;
+                PutPixel(x, y, TestTexture[TextureStartX][TextureStartY]);
+
+                /*
+                if (PerpWallDist <= 2) {
+                    PutPixel(x, y, 0xFF0000); } 
+                else {
+                    PutPixel(x, y, 0xC8102E); } 
+                */
+            }
         }
         }
 
