@@ -1,10 +1,15 @@
-# Wolfenstein 1D
+# DOOMSTEIN
 
-This is a very simple Ray casting program i made using SDL3 in C.
+This is a much more proper video game, a love letter to old-school fps's
 
-it's not great, to be quite honest as its very inefficient with the way it casts rays
-*basically checks every pixel for a hit*
+It's a game "engine" made entirely in C with the help of the SDL3 library
 
-in the future i plan on adding a fork with a proper DDA for the casting
+At the moment it's just a barebones map renderer, but in the future i plan on making it a solid
+enough game for it to be fun to play
 
-for now, enjoy this simple lil ray caster :}
+for now, marvel at my programing genius, and also wait for a tad bit while i work on the following:
+    - Textures
+    - HUD
+    - Enemies
+    - Literaly everything that makes up a boomer shooter
+
