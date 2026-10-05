@@ -8,8 +8,8 @@ At the moment it's just a barebones map renderer, but in the future i plan on ma
 enough game for it to be fun to play
 
 for now, marvel at my programing genius, and also wait for a tad bit while i work on the following:
-    - Textures
-    - HUD
-    - Enemies
-    - Literaly everything that makes up a boomer shooter
+    1. Textures
+    2. HUD
+    3. Enemies
+    4. Literaly everything that makes up a boomer shooter
 

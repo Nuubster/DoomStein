@@ -7,7 +7,6 @@
 #include "render.h"
 
 #define CELL_SIZE 32
-#define PI 3.141592653589793 // Hehe nasa refference
 
 struct Player {
     float x;
