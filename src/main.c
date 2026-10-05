@@ -17,13 +17,13 @@ struct Player {
 uint32_t TestTexture[8][8] =
 {
     { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF },
     { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF },
     { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
+    { 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF },
     { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
-    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
-    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
-    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 },
-    { 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0 }
+    { 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF, 0x0, 0xFF00FF }
 };
 
 int main() {
@@ -170,14 +170,17 @@ int main() {
             int WallTop = (RENDER_HEIGHT - WallHeight) / 2;
             int WallBottom = (RENDER_HEIGHT + WallHeight) / 2;
 
-            float TextureDivideY = 8 / RENDER_HEIGHT;
-            float TextureDivideX = 8 / RENDER_WIDTH;
-            int TextureStartX = SideStatus == 1 ? (int)(TextureDivideX * x) : (int)(TextureDivideX * ) ;
+            float HitOnWallX = SlayerMapX + (RayDirX * PerpWallDist);
+            float HitOnWallY = SlayerMapY + (RayDirY * PerpWallDist);
+
+            float TextureDivideY = 8.0f / RENDER_HEIGHT;
+            float TextureDivideX = 8.0f / RENDER_WIDTH;
+            int TextureStartX = SideStatus == 1 ? (int)(TextureDivideX * x) : (int)(TextureDivideX * HitOnWallX) ;
 
             // THE RENDERING!! ~ with the basic distance buffer
             for (int y = WallTop; y < WallBottom; y++) 
             {
-                int TextureStartY = SideStatus == 0 ? (int)(TextureDivideY * y) : (int)(TextureDivideY * );
+                int TextureStartY = SideStatus == 0 ? (int)(TextureDivideY * y) : (int)(TextureDivideY * HitOnWallY);
                 PutPixel(x, y, TestTexture[TextureStartY][TextureStartX]);
 
                 /*
