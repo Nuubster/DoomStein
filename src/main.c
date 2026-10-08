@@ -172,16 +172,17 @@ int main() {
 
             float HitOnWallX = SlayerMapX + (RayDirX * PerpWallDist);
             float HitOnWallY = SlayerMapY + (RayDirY * PerpWallDist);
+            
+            // The 8 is the Width of the texture :: define pls
+            int TextureX = fmodf(HitOnWallX, 1.0f) * 8;
 
-            float TextureDivideY = 8.0f / RENDER_HEIGHT;
-            float TextureDivideX = 8.0f / RENDER_WIDTH;
-            int TextureStartX = SideStatus == 1 ? (int)(TextureDivideX * x) : (int)(TextureDivideX * HitOnWallX) ;
-
-            // THE RENDERING!! ~ with the basic distance buffer
+            // THE RENDERING!! ~ with(out) the basic distance buffer
             for (int y = WallTop; y < WallBottom; y++) 
             {
-                int TextureStartY = SideStatus == 0 ? (int)(TextureDivideY * y) : (int)(TextureDivideY * HitOnWallY);
-                PutPixel(x, y, TestTexture[TextureStartY][TextureStartX]);
+                // again, 8 is the Height of the texture :: define pls
+                int TextureY = (int)(((float)(y - WallTop) / (WallBottom - WallTop)) * 8);
+                                
+                PutPixel(x, y, TestTexture[TextureY][TextureX]);
 
                 /*
                 if (PerpWallDist <= 2) {
